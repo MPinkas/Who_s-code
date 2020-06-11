@@ -5,7 +5,7 @@ import os
 import random
 from enum import Enum, unique
 
-STR_ARRAY_SIZE = 50
+STR_ARRAY_SIZE = 10000
 INPUT_DIR = "github_data/"
 
 

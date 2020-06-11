@@ -1,6 +1,8 @@
 from Line_length_classfier import LineClassifier
 import numpy as np
 from collections import defaultdict
+# from tools import DecisionStump
+# import tools
 
 
 class ConsensusClassifier:
@@ -46,14 +48,14 @@ class ConsensusClassifier:
         :param classifier: some classifier that implements predict that returns a dict
         :param X: data, shape=(num_samples,) dtype=string
         :param y: labels, shape=(num_samples,)
-        :return:
+        :return: float score of classifier
         """
         score = 0
         pred = classifier.predict(X)
         for i in range(y.shape[0]):
             if y[i] in pred[i].keys():
                 score += pred[i][y[i]]
-        return score
+        return score / y.shape[0]
 
     def predict(self, X):
         """
@@ -87,3 +89,10 @@ class ConsensusClassifier:
             res.append(_consensus(scores))
 
         return res
+
+# if __name__ == "__main__":
+#
+#     c = ConsensusClassifier()
+#     X, y = tools.generate_data(1000, 0)
+#     c.fit(X, y)
+#     zzz = c.predict(X)

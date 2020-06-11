@@ -21,11 +21,7 @@ class HistogramClassifier:
         counter=snippet_to_histogram(X,letter_list)
         df=pd.DataFrame(columns=self.columns)
         df = df.append(counter, ignore_index=True).fillna(0)
-        y=np.zeros(len(X))
-        for i in range(len(X)):
-            y[i]=self.classifier.predict(df)
-        y=round(y.sum()/len(X))
-        return y
+        return self.classifier.predict(df)
 
 def data_to_histogram(data, line_func):
     """
@@ -92,7 +88,6 @@ def snippet_to_histogram(data, line_func):
     for line in data:
         line_counter = Counter(line_func(line))
         text_counter += line_counter
-
     return text_counter
 
 
@@ -173,6 +168,8 @@ def main(counter):
 #works make_dataframe(letter_list)
 if __name__ == "__main__":
     a=HistogramClassifier()
-    print(a.predict(["    py_tag = PY37 \n",
-"else:\n" ,
-"    raise OSError('Jina requires Python 3.7 and above, but yours is %s' % sys.version)\n"]))
+    print(a.predict(["    try:"
+"        import mxnet as mx",
+"        if mx.__version__ < '1.4.0':",
+"            raise DistutilsPlatformError(",
+"                'Your MXNet version %s is outdated.  '"]))

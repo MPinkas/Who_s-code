@@ -1,5 +1,5 @@
 import numpy as np
-
+from collections import defaultdict
 
 class LineClassifier:
 
@@ -24,7 +24,7 @@ class LineClassifier:
         trained = self._process_input(X)
 
         # order everything by values of _process_input for easier finding
-        self.labels = [a for a in sorted(zip(trained, y))]
+        self.labels = [b for a, b in sorted(zip(trained, y))]
         self.trained = sorted(trained)
         zzz = 1
 
@@ -37,12 +37,11 @@ class LineClassifier:
         :param X: training data, list of length num_samples, every entry is a string
         :return:
         """
-        factor = [1, 10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12]
+        factor = [1, 10 ** 3, 10 ** 6, 10 ** 9, 10 ** 12, 10 ** 15, 10 ** 18]
         processed_X = []
         for sample in X:
             lines = sample.splitlines()
             key = 0
-            # todo decide if empty lines are considered lines or not (through testing)
             for i in range(len(lines)):
                 key += factor[i] * len(lines[i])
             processed_X.append(key)
@@ -51,12 +50,38 @@ class LineClassifier:
     def predict(self, X):
 
         p_X = self._process_input(X)
+        res = []
         for sample in p_X:
-            pass
+            res.append(self._predict_sample(sample))
+        return np.array(res)
+
+    def _predict_sample(self, sample):
+        """
+        predicts the author of a single sample
+
+        parameters
+        ----------
+        :param sample: process sample (int)
+        :return: author_lst, prob_lst
+        (author_lst is a list of all author names, prob_last is the probablity sample is from author)
+        """
+        # decides probablity by weighted average on k nearest neighbors
+        nns = self._single_nn(sample)
+        res = defaultdict(int)
+        sum = 0
+        for n in nns:
+            score = 1 / (self._sample_dist(sample, self.trained[n]) + 1)
+            res[self.labels[n]] += score
+            sum += score
+
+        for key in res.keys():
+            res[key] /= sum
+
+        return res
 
     def _single_nn(self, sample):
         """
-        gets the k nearest neighbors to a given sample
+        gets the indexes of k nearest neighbors to a given sample
 
         parameters
         ----------
@@ -67,9 +92,10 @@ class LineClassifier:
         bot = 0
 
         if sample >= self.trained[top]:
-            return self.trained[len(self.trained) - self.k:]
+            #return self.trained[len(self.trained) - self.k:]
+            return np.array(range(len(self.trained) - self.k, len(self.trained)))
         if sample <= self.trained[0]:
-            return self.trained[:self.k]
+            return np.array(range(self.k))
 
         # sort of binary search for nearest neighbor approx
         # (note that this is not distance based since ordering is done by number of lines first)
@@ -89,7 +115,7 @@ class LineClassifier:
             break  # sample == self.trained[mid]
 
         # finds k nearest neighbors (assumes k < size of trainig data)
-        return self._get_knn(mid, sample)
+        return np.array(self._get_knn(mid, sample))
 
     def _get_knn(self, mid, sample):
         """
@@ -107,12 +133,12 @@ class LineClassifier:
         while len(res) < self.k:
             if self._sample_dist(sample, self.trained[larger]) > \
                     self._sample_dist(sample, self.trained[smaller]):
-                res.append(self.trained[smaller])
+                res.append(smaller)
                 smaller -= 1
                 if smaller == -1:
                     break
             else:
-                res.append(self.trained[larger])
+                res.append(larger)
                 larger += 1
                 if larger == len(self.trained):
                     break
@@ -121,18 +147,27 @@ class LineClassifier:
 
         if smaller < 0:
             while len(res) < self.k:
-                res.append(self.trained[larger])
+                res.append(larger)
                 larger += 1
             return res
 
         while len(res) < self.k:
-            res.append(self.trained[smaller])
+            res.append(smaller)
             larger -= 1
 
         return res
 
     def _sample_dist(self, x, y):
+        """
+        calculated the distance between 2 processed samples (distance is the distance between every 3 digits)
 
+        parameters
+        ----------
+        :param x: processed sample 1 (int)
+        :param y: processed sample 2 (int)
+        :return:
+        """
+        # todo consider a metric which ignores the order of lines of certain length
         dist = 0
         d_x = x
         d_y = y
@@ -143,6 +178,3 @@ class LineClassifier:
             if d_x == 0 and d_y == 0:
                 break
         return dist
-
-    def score(self, X, y):
-        pass

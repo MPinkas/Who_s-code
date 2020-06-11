@@ -88,7 +88,7 @@ class ConsensusClassifier:
                     scores[key] += preds[i][key]
             res.append(_consensus(scores))
 
-        return res
+        return np.array(res)
 
 # if __name__ == "__main__":
 #

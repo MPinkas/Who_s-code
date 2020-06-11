@@ -5,6 +5,9 @@ import os
 import random
 from enum import Enum, unique
 
+STR_ARRAY_SIZE = 50
+INPUT_DIR = "github_data/"
+
 
 @unique
 class MsgTypes(Enum):
@@ -16,18 +19,15 @@ def print_msg(msg_type, msg):
     print("[" + msg_type.value + "] " + str(msg))
 
 
-def check_dirs(input_dir, output_dir):
+def check_dir(input_dir):
     if not os.path.exists(input_dir):
         print_msg(MsgTypes.ERROR, "Cannot find the path specified: " + input_dir)
         exit(0)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
 
 
-def create_snippets(total_samples, input_dir, output_dir, min_lines_per_slice=1, max_lines_per_slice=5):
+def create_snippets(total_samples, input_dir, min_lines_per_slice=1, max_lines_per_slice=5):
     input_str = []
     input_lbl = []
-    check_dirs(input_dir, output_dir)
 
     input_files = [f for f in listdir(input_dir) if isfile(join(input_dir, f))]
     total_num_of_files = len(input_files)
@@ -50,7 +50,7 @@ def create_snippets(total_samples, input_dir, output_dir, min_lines_per_slice=1,
             input_str.append("".join(lines))
             input_lbl.append(random_file_index)
         total_samples = total_samples - 1
-    return input_str, input_lbl
+    return np.array(input_str), np.array(input_lbl)
 
 
-create_snippets(20, "github_data/", "github_data_slices/")
+str_arr, lbl_arr = create_snippets(STR_ARRAY_SIZE, INPUT_DIR)

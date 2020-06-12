@@ -5,7 +5,7 @@ import os
 import random
 from enum import Enum, unique
 
-STR_ARRAY_SIZE = 10000
+STR_ARRAY_SIZE = 5000
 INPUT_DIR = "github_data/"
 
 
@@ -26,6 +26,13 @@ def check_dir(input_dir):
 
 
 def create_snippets(total_samples, input_dir, min_lines_per_slice=1, max_lines_per_slice=5):
+    """"
+    :param total_samples
+    :param input_dir
+    :param min_lines_per_slice
+    :param max_lines_per_slice
+    :return 2 numpy arrays: string array and corresponding labels array of integers
+    """
     input_str = []
     input_lbl = []
 
@@ -42,12 +49,17 @@ def create_snippets(total_samples, input_dir, min_lines_per_slice=1, max_lines_p
         with open(input_dir + input_files[random_file_index], mode="r", encoding="utf-8") as input_file:
             all_file_lines = input_file.readlines()
             file_len = len(all_file_lines)
-            random_starting_line = random.randint(1, file_len) - 1
-            if random_starting_line + random_num_code_lines > file_len:
-                lines = all_file_lines[random_starting_line:]
-            else:
-                lines = all_file_lines[random_starting_line:random_starting_line+random_num_code_lines]
-            input_str.append("".join(lines))
+            cleaned_lines = []
+            while not len(cleaned_lines):
+                random_starting_line = random.randint(1, file_len) - 1
+                if random_starting_line + random_num_code_lines > file_len:
+                    lines = all_file_lines[random_starting_line:]
+                else:
+                    lines = all_file_lines[random_starting_line:random_starting_line+random_num_code_lines]
+                for line in lines:
+                    if line != "\n":
+                        cleaned_lines.append(line)
+            input_str.append("".join(cleaned_lines))
             input_lbl.append(random_file_index)
         total_samples = total_samples - 1
     return np.array(input_str), np.array(input_lbl)

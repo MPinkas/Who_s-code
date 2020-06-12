@@ -12,13 +12,13 @@ import os
 class HistogramClassifier:
 
     def __init__(self):
-        X,y=make_dataframe(word_list)
+        X,y=make_dataframe(letter_list)
         self.columns=list(X.columns)
         self.classifier=LassoLarsIC()
         self.classifier.fit(X,y)
 
     def predict(self,X):
-        counter=snippet_to_histogram(X,word_list)
+        counter=snippet_to_histogram(X,letter_list)
         df=pd.DataFrame(columns=self.columns)
         df = df.append(counter, ignore_index=True).fillna(0)
         return self.classifier.predict(df)
